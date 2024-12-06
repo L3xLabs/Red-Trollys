@@ -1,4 +1,5 @@
 import { WebSocketServer } from "ws";
+import { GrandMaster } from "./state/GrandMaster";
 
 const PORT = 8000;
 
@@ -6,6 +7,7 @@ const wss = new WebSocketServer({ port: PORT }, () => {
   console.log(`Web Socket Server Started on ${PORT}...`);
 });
 
-wss.on("connection", function connection(userSocket) {
-  console.log(`use with socket ${userSocket} connected`);
+wss.on("connection", function connection(nodeSocket) {
+  const node = GrandMaster.getInstance().addNode(nodeSocket);
+  console.log(`Node ${node} connected`);
 });
