@@ -5,11 +5,6 @@ import { GrandMaster } from "./state/GrandMaster";
 
 const PORT = 8000;
 
-type RedisMessage = {
-  data: string;
-  timestamp: number;
-};
-
 type ErrorMessage = {
   error: string;
 };

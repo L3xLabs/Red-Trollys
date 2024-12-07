@@ -1,5 +1,6 @@
 export const HEALTH = "HEALTH";
 export const STRENGTH = "STRENGTH";
+export const NODEDATA = "NODEDATA";
 
 export type HealthMessage = {
   method: typeof HEALTH;
@@ -11,4 +12,10 @@ export type StrengthMessage = {
   strength: "LARGE" | "MID" | "SMALL";
 };
 
-export type IncomingMessage = HealthMessage | StrengthMessage;
+export type NodeData = {
+  method: typeof NODEDATA;
+  processId: string;
+  data: {};
+};
+
+export type IncomingMessage = HealthMessage | StrengthMessage | NodeData;

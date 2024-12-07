@@ -1,5 +1,5 @@
 import { WebSocket } from "ws";
-import { IncomingMessage, HEALTH, STRENGTH } from "../types/incoming";
+import { IncomingMessage, HEALTH, STRENGTH, NODEDATA } from "../types/incoming";
 import { outgoingMessage } from "../types/outgoing";
 import { GrandMaster } from "./GrandMaster";
 
@@ -35,8 +35,15 @@ export class Node {
         console.log("Health msg");
       } else if (parsedMessage.method === STRENGTH) {
         GrandMaster.getInstance().classifyNode(this.id, parsedMessage.strength);
-      } else {
-        console.log("msg received");
+      } else if (parsedMessage.method === NODEDATA) {
+        console.log(
+          `received data from node data:- ${JSON.stringify(parsedMessage.data)}`,
+        );
+        GrandMaster.getInstance().handleNodeResponse(
+          this.id,
+          parsedMessage.processId,
+          parsedMessage.data,
+        );
       }
     });
   }
