@@ -1,13 +1,20 @@
 import { WebSocket } from "ws";
 import { Node } from "./Node";
-import { SubscriptionManager } from "./SubscriptionManager";
+import { HEALTHCHECK } from "../types/outgoing";
+import { getRandomId } from "../util/getRandomId";
 
 export class GrandMaster {
   private static instance: GrandMaster;
+
   private nodeMap: Map<string, Node> = new Map();
-  private smallNodes: Node[] = [];
-  private midNodes: Node[] = [];
-  private largeNodes: Node[] = [];
+
+  private nodes: {
+    id: string;
+    node: Node;
+    size: "SMALL" | "MID" | "LARGE";
+  }[] = [];
+
+  private trainers: Map<string, { master: Node; workers: Node[] }> = new Map();
 
   private constructor() {}
 
@@ -20,45 +27,49 @@ export class GrandMaster {
   }
 
   public addNode(nodeSocket: WebSocket) {
-    const id = this.getRandomId();
+    const id = getRandomId();
     const node = new Node(id, nodeSocket);
     this.nodeMap.set(id, node);
+    node.sendMessage({ method: HEALTHCHECK, msg: "Send Health data" });
     this.registerOnClose(id, nodeSocket);
     console.log(`node with id ${id} added to grand master`);
     return node;
   }
 
-  //TODO: Create method which subscribs the nodes on the required channels for data
-
   public registerOnClose(id: string, nodeSocket: WebSocket) {
     nodeSocket.on("close", () => {
       this.nodeMap.delete(id);
-      SubscriptionManager.getInstance().nodeLeft(id);
+      this.nodes.filter((n) => n.node.getId() != id);
     });
+  }
+
+  public classifyNode(id: string, strength: "SMALL" | "MID" | "LARGE") {
+    const node = this.nodeMap.get(id);
+    if (!node) {
+      console.log(`Node not found wrong id ${id}`);
+      return;
+    }
+    switch (strength) {
+      case "SMALL":
+        this.nodes.push({ id: id, node: node, size: "SMALL" });
+        break;
+      case "LARGE":
+        this.nodes.push({ id: id, node: node, size: "LARGE" });
+        break;
+      case "MID":
+        this.nodes.push({ id: id, node: node, size: "MID" });
+        break;
+    }
+    console.log(this.nodes);
+    return;
+  }
+
+  //@ts-ignore
+  public execute(apiEvent) {
+    console.log(`Execute called with api event:- ${apiEvent}`);
   }
 
   public getNode(id: string) {
     return this.nodeMap.get(id);
-  }
-
-  private getRandomId() {
-    let S4 = function () {
-      return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
-    };
-
-    return (
-      S4() +
-      S4() +
-      "-" +
-      S4() +
-      "-" +
-      S4() +
-      "-" +
-      S4() +
-      "-" +
-      S4() +
-      S4() +
-      S4()
-    );
   }
 }

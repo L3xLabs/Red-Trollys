@@ -1,11 +1,11 @@
 import { WebSocket } from "ws";
 import { IncomingMessage, HEALTH, STRENGTH } from "../types/incoming";
-// import { SubscriptionManager } from "./SubscriptionManager";
+import { outgoingMessage } from "../types/outgoing";
+import { GrandMaster } from "./GrandMaster";
 
 export class Node {
   private id: string;
   private nodeSocket: WebSocket;
-  private subscriptions: string[] = [];
 
   constructor(id: string, nodeSocket: WebSocket) {
     this.id = id;
@@ -13,16 +13,7 @@ export class Node {
     this.addListeners();
   }
 
-  public subscribe(channel: string) {
-    this.subscriptions.push(channel);
-  }
-
-  public unsubscribe(channel: string) {
-    this.subscriptions.filter((c) => c != channel);
-  }
-
-  //@ts-ignore
-  public sendMessage(message) {
+  public sendMessage(message: outgoingMessage) {
     this.nodeSocket.send(JSON.stringify(message));
   }
 
@@ -31,8 +22,16 @@ export class Node {
       const parsedMessage: IncomingMessage = JSON.parse(message); //type of parsed message should be Incoming message
 
       if (parsedMessage.method === HEALTH) {
+        console.log("Health msg");
       } else if (parsedMessage.method === STRENGTH) {
+        GrandMaster.getInstance().classifyNode(this.id, parsedMessage.strength);
+      } else {
+        console.log("msg received");
       }
     });
+  }
+
+  public getId() {
+    return this.id;
   }
 }

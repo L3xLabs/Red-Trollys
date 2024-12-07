@@ -9,5 +9,5 @@ const wss = new WebSocketServer({ port: PORT }, () => {
 
 wss.on("connection", function connection(nodeSocket) {
   const node = GrandMaster.getInstance().addNode(nodeSocket);
-  console.log(`Node ${node} connected`);
+  console.log(`Node connected`);
 });
