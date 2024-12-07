@@ -6,15 +6,25 @@ import { GrandMaster } from "./GrandMaster";
 export class Node {
   private id: string;
   private nodeSocket: WebSocket;
+  private available: boolean;
 
   constructor(id: string, nodeSocket: WebSocket) {
     this.id = id;
     this.nodeSocket = nodeSocket;
     this.addListeners();
+    this.available = true;
   }
 
   public sendMessage(message: outgoingMessage) {
     this.nodeSocket.send(JSON.stringify(message));
+  }
+
+  public setBusy() {
+    this.available = false;
+  }
+
+  public isAvailable() {
+    return this.available;
   }
 
   private addListeners() {

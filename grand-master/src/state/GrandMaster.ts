@@ -65,8 +65,8 @@ export class GrandMaster {
   }
 
   //@ts-ignore
-  public execute(apiEvent) {
-    console.log(`Execute called with api event:- ${apiEvent}`);
+  public execute(data) {
+    console.log(`Execute called with api event:- ${data}`);
   }
 
   public getNode(id: string) {
