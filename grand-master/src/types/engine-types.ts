@@ -14,9 +14,9 @@ export type sendWork = {
 };
 
 export enum NodeSizes {
-  "LARGE" = "LARGE",
-  "MID" = "MID",
-  "SMALL" = "SMALL",
+  "SMALL" = 1,
+  "MID" = 2,
+  "LARGE" = 3,
 }
 
 export type EngineMessage = requiredNode | sendWork;

@@ -16,8 +16,8 @@ export type ProcessData = {
   method: typeof PROCESSDATA;
   processId: string;
   data: {
-    jsUrl: string;
-    csvUrl: string;
+    csvurl: string;
+    layer: string;
   };
 };
 

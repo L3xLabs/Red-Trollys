@@ -1,6 +1,6 @@
 export type ApiData = {
   data: {
-    csvUrl: string;
+    csvurl: string;
     layers: string[];
   };
   timestamp: number;

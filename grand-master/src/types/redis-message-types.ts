@@ -1,4 +1,7 @@
-export type RedisMessage = {
-  data: string;
+export type ApiData = {
+  data: {
+    csvurl: string;
+    layers: string[];
+  };
   timestamp: number;
 };

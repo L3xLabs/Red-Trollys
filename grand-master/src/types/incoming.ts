@@ -1,3 +1,5 @@
+import { NodeSizes } from "./engine-types";
+
 export const HEALTH = "HEALTH";
 export const STRENGTH = "STRENGTH";
 export const NODEDATA = "NODEDATA";
@@ -9,7 +11,7 @@ export type HealthMessage = {
 
 export type StrengthMessage = {
   method: typeof STRENGTH;
-  strength: "LARGE" | "MID" | "SMALL";
+  strength: NodeSizes;
 };
 
 export type NodeData = {

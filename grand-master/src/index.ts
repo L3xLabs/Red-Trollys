@@ -2,6 +2,7 @@ import { WebSocketServer } from "ws";
 import { fork, ChildProcess } from "node:child_process";
 import path from "path";
 import { GrandMaster } from "./state/GrandMaster";
+import { ApiData } from "./types/api-types";
 
 const PORT = 8000;
 
@@ -12,13 +13,13 @@ type ErrorMessage = {
 function startChildProcess(): ChildProcess {
   const childProcess = fork(path.join(__dirname, "api-handler.js"));
 
-  childProcess.on("message", (message: RedisMessage | ErrorMessage) => {
+  childProcess.on("message", (message: ApiData | ErrorMessage) => {
     try {
       if ("error" in message) {
         console.error("Error from child process:", message.error);
       } else {
         console.log("Received message from child process:", message);
-        GrandMaster.getInstance().execute(message.data);
+        GrandMaster.getInstance().execute(message);
       }
     } catch (error) {
       console.error("Error handling message:", error);

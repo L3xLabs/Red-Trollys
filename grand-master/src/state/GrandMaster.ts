@@ -79,6 +79,10 @@ export class GrandMaster {
       console.log(`Node not found wrong id ${id}`);
       return;
     }
+    if (this.nodes.find((n) => n.node.getId() === id)) {
+      return;
+    }
+
     switch (strength) {
       case NodeSizes.SMALL:
         this.nodes.push({ id: id, node: node, size: NodeSizes.SMALL });
@@ -97,10 +101,10 @@ export class GrandMaster {
     return;
   }
 
-  private async createEngineScript(
+  private createEngineScript(
     data: { csvurl: string; layers: string[] },
     processId: string,
-  ): Promise<string> {
+  ): string {
     const tempDir = path.join(__dirname, "temp");
     if (!fs.existsSync(tempDir)) {
       fs.mkdirSync(tempDir);
@@ -108,16 +112,33 @@ export class GrandMaster {
 
     const scriptPath = path.join(tempDir, `engine_${processId}.js`);
     const scriptContent = `
-      // Injected variables
-      const PROCESS_ID = "${processId}";
-      
-      // Engine logic
+async function main() {
+  // Injected variables
+  const PROCESS_ID = "${processId}";
 
-      //Data From node
-        process.send();
+  // Engine logic
+
+  //Data From node
+  process.send({
+    method: "NODEINFO",
+    numberOfRequiredNodes: 2,
+    sizesOfNodes: [3, 2],
+  });
+
+  process.send({
+    method: "SENDWORK",
+    processId: PROCESS_ID,
+    work: [
+      { size: 2, layer: "layer1" },
+      { size: 3, layer: "layer2" },
+    ],
+  });
+}
+main();
+
     `;
 
-    await fs.promises.writeFile(scriptPath, scriptContent);
+    fs.writeFileSync(scriptPath, scriptContent);
     return scriptPath;
   }
 
@@ -220,7 +241,7 @@ export class GrandMaster {
     console.log(`Execute called with api event:- ${JSON.stringify(apiEvent)}`);
 
     const processId = getRandomId();
-    const enginePath = await this.createEngineScript(apiEvent.data, processId);
+    const enginePath = this.createEngineScript(apiEvent.data, processId);
 
     const engineProcess = fork(enginePath);
 
@@ -248,16 +269,34 @@ export class GrandMaster {
         };
 
         this.processMap.set(processId, processMapping);
+        console.log(this.processMap);
       } else if (message.method === SENDWORK) {
+        console.log(message);
         const processMapping = this.processMap.get(message.processId);
+        console.log(processMapping);
         if (!processMapping) {
+          console.log("Mapping not found");
           return;
         }
-        //TODO: Assign work to nodes
+
+        processMapping.nodes.sort((a, b) => a.size - b.size);
+        message.work.sort((a, b) => a.size - b.size);
+
+        console.log(processMapping.nodes);
+        console.log(message.work);
+
+        for (let i = 0; i < processMapping.nodes.length; i++) {
+          processMapping.nodes[i].node.sendMessage({
+            method: PROCESSDATA,
+            processId: processMapping.processId,
+            data: {
+              csvurl: processMapping.data.csvurl,
+              layer: message.work[i].layer,
+            },
+          });
+        }
       }
     });
-
-    // Handle engine responses
 
     // Handle process completion
     engineProcess.on("exit", () => {

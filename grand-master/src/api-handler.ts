@@ -1,5 +1,5 @@
 import { createClient } from "redis";
-import { RedisMessage } from "./types/redis-message-types";
+import { ApiData } from "./types/api-types";
 
 async function main() {
   if (!process.send) {
@@ -23,8 +23,8 @@ async function main() {
       if (message) {
         // Send the message as an object, not a string
         if (typeof process.send === "function") {
-          const messageObj: RedisMessage = {
-            data: message,
+          const messageObj: ApiData = {
+            data: JSON.parse(message),
             timestamp: Date.now(),
           };
           process.send(messageObj);
